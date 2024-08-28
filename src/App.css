@@ -1,25 +1,42 @@
 @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
 
-:root {
+/* :root {
     --primary-color: #007bff;
     --primary-color-hover: #0056b3;
     --border-color: #ccc;
     --input-padding: 10px;
     --input-border-radius: 4px;
     --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-}
+} */
 body {
-    background-color: #bfb9b9bd;
-    
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+    background: linear-gradient(180deg, #a2c2e0 10%, #1f78b4 100%);
     margin: 0;
-    font-family: 'Lato', sans-serif;
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #858796;
+    text-align: left;
+    background-color: #fff;
   }
-  
 
-.register-container {
+/* FormStyles.css */
+
+.form-select {
+  display: block;
+  width: 100%;
+  height: auto; /* Utilisez 'auto' pour tester */
+  padding: 0.375rem 0.75rem;
+  line-height: 1.5;
+  color: #6e707e;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* .register-container {
     width: 300px;
     margin: 0 auto;
     padding: 20px;
@@ -104,7 +121,7 @@ body {
   
   button:hover {
     background-color: #0056b3;
-  }
+  } */
 
   .password-container {
     position: relative;
@@ -223,7 +240,7 @@ body {
   
 
   /* Responsiveness */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
     .register-container {
       padding: 15px;
     }
@@ -253,7 +270,7 @@ body {
       font-size: 12px;
       padding: 8px;
     }
-  }
+  } */
 
 
 
@@ -308,24 +325,24 @@ body {
   /* Home.css */
 /* Home.css */
 
-.home-container {
+/* .home-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f8f9fa; /* Couleur de fond claire */
-}
+  background-color: #f8f9fa; 
+} */
 
-.home-header {
-  background-color: #343a40; /* Couleur de fond sombre pour l'en-tête */
+/* .home-header {
+  background-color: #343a40; 
   color: white;
-}
-
+} */
+/* 
 .home-main {
   flex: 1;
   padding: 2rem;
-}
+} */
 
-.home-section {
+/* .home-section {
   text-align: center;
   padding: 2rem;
 }
@@ -340,16 +357,16 @@ body {
 .home-buttons .btn {
   width: 100%;
   max-width: 300px;
-}
+} */
 
-.home-footer {
-  background-color: #343a40; /* Couleur de fond sombre pour le pied de page */
+/* .home-footer {
+  background-color: #343a40; 
   color: white;
   padding: 1rem;
   text-align: center;
-}
+} */
   /* Responsiveness */
-  @media (max-width: 768px) {
+  /* @media (max-width: 768px) {
     .home-container {
       padding: 15px;
     }
@@ -386,10 +403,10 @@ body {
       padding: 8px;
     }
   }
-  
+   */
   /*ADD_MEMBER CSS*/
 
-  @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+   @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
 
 .register-member-container {
     max-width: 600px;
@@ -471,40 +488,40 @@ legend {
   /*Buttons*/
 
   /* Ajoutez ce CSS pour aligner les boutons sur la même ligne */
-.form-buttons {
+/* .form-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
-}
+} */
 
-.submit-button, .cancel-button {
+/* .submit-button, .cancel-button {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   
-}
+} */
 
-.submit-button {
-  background-color: #4CAF50; /* Couleur pour le bouton Ajouter */
+/* .submit-button {
+  background-color: #4CAF50; 
   color: white;
   margin-right: 200px;
   
-}
+} */
 
-.cancel-button {
-  background-color: #f44336; /* Couleur pour le bouton Annuler */
+/* .cancel-button {
+  background-color: #f44336; 
   color: white;
   
-}
+} */
 
 /* Profile.css */
 
 /* Styles généraux pour la page de profil */
-.profile-container {
+/* .profile-container {
   padding: 20px;
-  background-color: #f8f9fa; /* Couleur de fond légère pour la page */
-}
+  background-color: #f8f9fa; 
+} */
 
 /* Styles pour la carte de profil */
 .card {
@@ -520,32 +537,32 @@ legend {
   font-weight: bold; /* Texte en gras */
 }
 
-.card-body {
-  padding: 20px; /* Espacement intérieur de la carte */
-}
+/* .card-body {
+  padding: 20px;} Espacement intérieur de la carte */
 
-.alert {
-  margin-bottom: 20px; /* Espacement inférieur pour l'alerte */
-}
 
-.btn-primary {
-  background-color: #007bff; /* Couleur du bouton primaire */
-  border-color: #007bff; /* Couleur de bordure du bouton */
-}
+/* .alert {
+  margin-bottom: 20px;} Espacement inférieur pour l'alerte */
 
-.btn-primary:hover {
-  background-color: #0056b3; /* Couleur de survol du bouton */
-  border-color: #004085; /* Couleur de bordure au survol */
-}
+
+/* .btn-primary {
+  background-color: #007bff; 
+  border-color: #007bff; 
+} */
+
+/* .btn-primary:hover {
+  background-color: #0056b3; 
+  border-color: #004085; 
+} */
 
 /* Styles pour le bouton de retour */
-.btn-back {
-  margin-top: 20px; /* Espacement supérieur pour le bouton de retour */
-}
+/* .btn-back {
+  margin-top: 20px; 
+} */
 
 /* Member List */
 
-.member-list-container {
+/* .member-list-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -560,10 +577,10 @@ legend {
   align-self: center;
   padding: 10px 20px;
   font-size: 16px;
-}
+} */
 
 /* steppers */
-.family-registration-container, .register-container, .login-container {
+/* .family-registration-container, .register-container, .login-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
@@ -614,10 +631,10 @@ button:disabled {
 .MuiButton-contained {
   background-color: #007bff;
   color: #fff;
-}
+} */
 
 /* NotFound.css */
-.not-found-container {
+/* .not-found-container {
   padding: 50px 0;
   text-align: center;
 }
@@ -646,4 +663,4 @@ button:disabled {
 }
 .card-body {
   padding: 2rem;
-}
+} */

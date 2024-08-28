@@ -3,62 +3,55 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import moment from 'moment';
-import { useFamily } from '../context/FamilyContext';
 
 const EditMember = () => {
-    const { id } = useParams();
-    const [member, setMember] = useState(null);
+    const {id} = useParams();
     const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [dateNaissance, setDateNaissance] = useState('');
-    const [pereName, setPereName] = useState('');
-    const [mereName, setMereName] = useState('');
+    const [pereid, setPereId] = useState('');
+    const [mereid, setMereId] = useState('');
     const [isMarried, setIsMarried] = useState('');
     const [gender, setGender] = useState('');
     const [religion, setReligion] = useState('');
     const [bloodGroup, setBloodGroup] = useState('');
     const [electrophoresis, setElectrophoresis] = useState('');
-    const [signFa, setSignFA] = useState('');
     const [message, setMessage] = useState('');
-    const [conjointName, setConjointName] = useState('');
+    const [conjointid, setConjointId] = useState('');
     const [metier, setMetier] = useState('');
     const [members, setMembers] = useState([]);
     const [linkTypes, setLinkTypes] = useState([]);
     const [selectedLinkType, setSelectedLinkType] = useState('');
-    const { familyData } = useFamily();
+    const [originalData, setOriginalData] = useState(null);
     const navigate = useNavigate(); 
 
     useEffect(() => {
         let isMounted = true; // suivi si le composant est monté
-    
         const fetchData = async () => {
             try {
                 const [memberResponse, linkTypesResponse, membersResponse] = await Promise.all([
-                    axiosInstance.get(`/membres/afficher/${id}`),
+                    axiosInstance.get(`/admin/member/details/${id}`),
                     axiosInstance.get('/utils/typesDeLien'),
                     axiosInstance.get('/user/member/tous')
                 ]);
-    
                 if (isMounted) {
-                    const memberData = memberResponse.data.data;
-                    const formattedDate = moment(memberData.date_de_naissance).format('YYYY-MM-DD');
+                    setOriginalData(memberResponse?.data?.data);
+                    setLinkTypes(linkTypesResponse?.data);
+                    setMembers(membersResponse?.data);
+                    setLastName(memberResponse?.data?.data?.nom || '')
+                    setFirstName(memberResponse?.data?.data?.prenom);
+                    setDateNaissance( moment(memberResponse?.data?.data?.date_de_naissance).format('YYYY-MM-DD'));
+                    setGender(memberResponse?.data?.data?.sexe || '');
+                    setPereId(memberResponse?.data?.data?.père?._id);
+                    setMereId(memberResponse?.data?.data?.mère?._id);
+                    setIsMarried(memberResponse?.data?.data?.statut_matrimonial || '');
+                    setConjointId(memberResponse?.data?.data?.conjoint?.id);
+                    setReligion(memberResponse?.data?.data?.religion || '');
+                    setMetier(memberResponse?.data?.data?.profession || '');
+                    setBloodGroup(memberResponse?.data?.data?.groupe_sanguin || '');
+                    setElectrophoresis(memberResponse?.data?.data?.electrophorese || '');
+                    setSelectedLinkType(memberResponse?.data?.data?.type_de_lien || '');
     
-                    setMember(memberData);
-                    setFirstName(memberData.prenom);
-                    setDateNaissance(formattedDate);
-                    setPereName(memberData.id_pere || '');
-                    setMereName(memberData.id_mere || '');
-                    setIsMarried(memberData.statut_matrimonial || '');
-                    setGender(memberData.sexe || '');
-                    setReligion(memberData.religion || '');
-                    setBloodGroup(memberData.groupe_sanguin || '');
-                    setElectrophoresis(memberData.electrophorese || '');
-                    setSignFA(memberData.signe_du_fa || '');
-                    setConjointName(memberData.conjoint || '');
-                    setMetier(memberData.profession || '');
-                    setSelectedLinkType(memberData.type_de_lien || '');
-    
-                    setLinkTypes(linkTypesResponse.data);
-                    setMembers(membersResponse.data);
                 }
             } catch (error) {
                 if (isMounted) {
@@ -67,33 +60,32 @@ const EditMember = () => {
                 }
             }
         };
-    
         fetchData();
-    
         return () => {
             isMounted = false; // fonction de nettoyage
         };
     }, [id]);
-
+    const updateData = {
+        prenom: firstName !== originalData?.prenom ? firstName : undefined,
+        nom: lastName !== originalData?.nom ? lastName : undefined,
+        date_de_naissance: moment(dateNaissance).format('DD/MM/YYYY') !== moment(originalData?.date_de_naissance).format('DD/MM/YYYY') ? moment(dateNaissance).format('DD/MM/YYYY') : undefined,
+        statut_matrimonial: isMarried !== originalData?.statut_matrimonial ? isMarried : undefined,
+        sexe: gender !== originalData?.sexe ? gender :undefined,
+        religion: religion !== originalData?.religion ? religion : undefined,
+        groupe_sanguin: bloodGroup !== originalData?.groupe_sanguin ? bloodGroup : undefined,
+        electrophorese: electrophoresis !== originalData?.electrophorese ? electrophoresis : undefined,
+        profession: metier !== originalData?.profession ? metier : undefined,
+        id_pere: pereid !== originalData?.père?._id ? pereid : undefined,
+        id_mere: mereid !== originalData?.mère?._id ? mereid : undefined,
+        id_conjoint: conjointid !== originalData?.conjoint?.id ? conjointid : undefined,
+    };
+    const filteredData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, v]) => v !== undefined)
+    );
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.put(`admin/member/modifier/${id}`, {
-                prenom: firstName,
-                nom: familyData.family_name || '',
-                date_de_naissance: moment(dateNaissance).format('DD/MM/YYYY'),
-                id_pere: pereName,
-                id_mere: mereName,
-                statut_matrimonial: isMarried,
-                type_de_lien: selectedLinkType,
-                sexe: gender,
-                religion,
-                groupe_sanguin: bloodGroup,
-                electrophorese: electrophoresis,
-                signe_du_fa: signFa,
-                conjoint: conjointName,
-                profession: metier
-            });
+            await axiosInstance.put(`admin/member/modifier/${id}`, filteredData);
             setMessage('Membre modifié avec succès!');
             navigate('/members-list');
         } catch (error) {
@@ -110,7 +102,7 @@ const EditMember = () => {
         <Container>
             <h2>Modifier un membre</h2>
             {message && <p>{message}</p>}
-            {member ? (
+            {originalData ? (
                 <Form onSubmit={handleSubmit}>
                     <fieldset>
                         <legend>Informations générales</legend>
@@ -120,7 +112,8 @@ const EditMember = () => {
                                     <Form.Label>Nom</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={familyData.family_name || ''}
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
                                         required
                                     />
                                 </Form.Group>
@@ -175,10 +168,10 @@ const EditMember = () => {
                                     <Form.Label>Père</Form.Label>
                                     <Form.Control
                                         as="select"
-                                        value={pereName}
-                                        onChange={(e) => setPereName(e.target.value)}
+                                        value={pereid}
+                                        onChange={(e) => setPereId(e.target.value)}
                                     >
-                                        <option value="">Sélectionner un membre...</option>
+                                        <option value="">Sélectionner votre père...</option>
                                         {members.map((member) => (
                                             <option key={member._id} value={member._id}>
                                                 {member.prenom} {member.nom}
@@ -192,10 +185,10 @@ const EditMember = () => {
                                     <Form.Label>Mère</Form.Label>
                                     <Form.Control
                                         as="select"
-                                        value={mereName}
-                                        onChange={(e) => setMereName(e.target.value)}
+                                        value={mereid}
+                                        onChange={(e) => setMereId(e.target.value)}
                                     >
-                                        <option value="">Sélectionner un membre...</option>
+                                        <option value="">Sélectionner votre mère...</option>
                                         {members.map((member) => (
                                             <option key={member._id} value={member._id}>
                                                 {member.prenom} {member.nom}
@@ -226,8 +219,7 @@ const EditMember = () => {
                             </Col>
                         </Row>
                     </fieldset>
-                    <fieldset>
-                       
+                    <fieldset> 
                         <legend>Autres informations</legend>
                         <Form.Group controlId="isMarried">
                             <Form.Label>État matrimonial</Form.Label>
@@ -248,19 +240,23 @@ const EditMember = () => {
                             <Form.Group controlId="conjointName">
                                 <Form.Label>Nom du conjoint</Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    value={conjointName}
-                                    onChange={(e) => setConjointName(e.target.value)}
-                                    required
-                                />
+                                    as="select"
+                                    value={conjointid}
+                                    onChange={(e) => setConjointId(e.target.value)}
+                                >
+                                    <option value="">Sélectionner votre conjoint...</option>
+                                     {members.map((member) => (
+                                    <option key={member._id} value={member._id}>
+                                        {member.prenom} {member.nom}
+                                    </option>
+                                    ))}
+                                </Form.Control>
                             </Form.Group>
                         )}
                         <Form.Group controlId="metier">
                             <Form.Label>Profession</Form.Label>
                             <Form.Control
                                 type="text"
-
-
                                 value={metier}
                                 onChange={(e) => setMetier(e.target.value)}
                             />
@@ -299,21 +295,20 @@ const EditMember = () => {
                                 <option value="Autre">Autre</option>
                             </Form.Control>
                         </Form.Group>
-                        <Form.Group controlId="signFa">
-                            <Form.Label>Signe du Fâ</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={signFa}
-                                onChange={(e) => setSignFA(e.target.value)}
-                            />
-                        </Form.Group>
                         <Form.Group controlId="electrophoresis">
                             <Form.Label>Électrophorèse</Form.Label>
                             <Form.Control
-                                type="text"
+                                as="select"
                                 value={electrophoresis}
                                 onChange={(e) => setElectrophoresis(e.target.value)}
-                            />
+                            >
+                                <option value="">Sélectionner...</option>
+                                <option value="AA">AA</option>
+                                <option value="AS">AS</option>
+                                <option value="SC">SC</option>
+                                <option value="SS">SS</option>
+                                <option value="Autre">Autre</option>
+                            </Form.Control>
                         </Form.Group>
                     </fieldset>
                     <Button variant="primary" type="submit">Modifier</Button>

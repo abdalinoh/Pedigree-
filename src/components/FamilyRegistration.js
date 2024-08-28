@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Box, Button, TextField, Typography, MenuItem, CircularProgress, Link } from '@mui/material';
 import countries from '../data/countries.json';
 import { useFamily } from '../context/FamilyContext';
+// import '../styles/sb-admin-2.min.css'; // Importation du fichier CSS
 
-const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille}) => {
+const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille }) => {
   const [family_name, setFamilyName] = useState('');
   const [country, setCountry] = useState('');
   const [ethnicity, setEthnicity] = useState('');
@@ -12,19 +12,19 @@ const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille}) => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isClicked, setIsClicked] = useState(false); // État pour suivre si le bouton a été cliqué
-  const [showLoginLink, setShowLoginLink] = useState(false); // État pour afficher le lien de connexion
+  const [isClicked, setIsClicked] = useState(false);
+  const [fieldsDisabled, setFieldsDisabled] = useState(false); // Nouvel état pour désactiver les champs
+  const [showLoginLink, setShowLoginLink] = useState(false);
   const { setFamilyData } = useFamily();
 
-  const HOST = "http://192.168.86.129:5000";
+  const HOST = "http://192.168.86.94:5001"; // Remplacez par votre URL d'API
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setIsClicked(true); // Marquer le bouton comme cliqué
+    setIsClicked(true);
 
     try {
-      // Vérifiez si la famille existe déjà
       const response = await axios.post(`${HOST}/api/auth/create`, {
         family_name,
         country,
@@ -35,110 +35,138 @@ const FamilyRegistration = ({ onRegister, onFamilyName, setnewFamille}) => {
       const { fam_exist, idFamille } = response.data;
 
       if (fam_exist) {
-        // La famille existe déjà
         setMessage('La famille existe déjà ! Vous pouvez maintenant vous inscrire.');
         setMessageType('error');
-        setCountry('');
-        setEthnicity('');
-        setVillage('');
+        // setCountry('');
+        // setEthnicity('');
+        // setVillage('');
         onFamilyName(family_name);
         setFamilyData({ family_name, idFamille, fam_exist });
-        setShowLoginLink(true); // Afficher le lien de connexion
+        setShowLoginLink(true);
         if (onRegister) {
-          onRegister(true); // Passer à l'étape suivante
+          onRegister(true);
         }
       } else {
-        // La famille n'existe pas, enregistrer la nouvelle famille
         setMessage('Famille enregistrée avec succès ! Vous pouvez maintenant vous inscrire.');
         setMessageType('success');
         if (onRegister) {
-          onRegister(true); // Passer à l'étape suivante après enregistrement
+          onRegister(true);
         }
         setFamilyData({ family_name, idFamille, fam_exist });
         setnewFamille(response.data.newFamille);
-        onFamilyName(family_name); // Conserver le nom de famille
+        onFamilyName(family_name);
       }
+      // Désactiver les champs après l'enregistrement réussi
+        setFieldsDisabled(true);
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Une erreur est survenue lors de l\'enregistrement de la famille.';
       setMessage(errorMessage);
       setMessageType('error');
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '600px', margin: 'auto', padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: 3 }}>
-      <Typography variant="h5" component="h2" gutterBottom>
-        Enregistrement de la Famille
-      </Typography>
-      {message && (
-        <Typography variant="body1" color={messageType === 'success' ? 'green' : 'red'} gutterBottom>
-          {message}
-        </Typography>
-      )}
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Nom de la famille"
-          value={family_name}
-          onChange={(e) => setFamilyName(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-          disabled={isSubmitting}
-        />
-        <TextField
-          select
-          label="Pays"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-          disabled={isSubmitting}
-        >
-          {countries.map((country) => (
-            <MenuItem key={country.name} value={country.name}>
-              {country.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          label="Ethnicité"
-          value={ethnicity}
-          onChange={(e) => setEthnicity(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-          disabled={isSubmitting}
-        />
-        <TextField
-          label="Village"
-          value={village}
-          onChange={(e) => setVillage(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-          disabled={isSubmitting}
-        />
-        <Button 
-          type="submit" 
-          variant="contained" 
-          color="primary" 
-          disabled={isSubmitting || isClicked} // Désactiver le bouton si soumis ou déjà cliqué
-          sx={{ display: 'flex', alignItems: 'center' }}
-        >
-          {isSubmitting ? <CircularProgress size={24} sx={{ mr: 1 }} /> : 'Enregistrer la famille'}
-        </Button>
-      </form>
-      {showLoginLink && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body1">
-            Vous avez déjà un compte ? <Link href="/login">Se connecter</Link>
-          </Typography>
-        </Box>
-      )}
-    </Box>
+    <div className="container">
+      <div className="card o-hidden border-0 shadow-lg my-5">
+        <div className="card-body p-0">
+          <div className="row">
+            <div className="col-lg-5 d-none d-lg-block bg-register-image"></div>
+            <div className="col-lg-7">
+              <div className="p-5">
+                <div className="text-center">
+                  <h1 className="h4 text-gray-900 mb-4">Enregistrement de la Famille</h1>
+                </div>
+                <form className="user" onSubmit={handleSubmit}>
+                  {message && (
+                    <div className={`alert ${messageType === 'success' ? 'alert-success' : 'alert-danger'}`} role="alert">
+                      {message}
+                    </div>
+                  )}
+                  <div className="form-group row">
+                    <div className="col-sm-12 mb-3 mb-sm-0">
+                      <input
+                        type="text"
+                        className="form-control form-control-user"
+                        id="familyName"
+                        placeholder="Nom de la famille"
+                        value={family_name}
+                        onChange={(e) => setFamilyName(e.target.value)}
+                        required
+                        disabled={isSubmitting || fieldsDisabled}
+                        
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <select
+
+                      className="form-select form-control-user"
+                      id="country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      required
+                      disabled={isSubmitting || fieldsDisabled}
+                      autoComplete='country'
+                    >
+                      <option value="" disabled>Sélectionner le pays</option>
+                      {countries.map((country) => (
+                        <option key={country.name} value={country.name}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      className="form-control form-control-user"
+                      id="ethnicity"
+                      placeholder="Ethnicité"
+                      value={ethnicity}
+                      onChange={(e) => setEthnicity(e.target.value)}
+                      required
+                      disabled={isSubmitting || fieldsDisabled}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      className="form-control form-control-user"
+                      id="village"
+                      placeholder="Village"
+                      value={village}
+                      onChange={(e) => setVillage(e.target.value)}
+                      required
+                      disabled={isSubmitting || fieldsDisabled}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-user btn-block"
+                    disabled={isSubmitting || isClicked}
+                  >
+                    {isSubmitting ? (
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    ) : (
+                      'Enregistrer la famille'
+                    )}
+                  </button>
+                </form>
+                {showLoginLink && (
+                  <div className="text-center mt-2">
+                    <a className="small" href="/login">Vous avez déjà un compte ? Se connecter</a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

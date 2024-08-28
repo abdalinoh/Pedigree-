@@ -25,7 +25,7 @@ const MemberList = () => {
   const columns = [
     {
       name: 'Nom',
-      selector: row => row.familyData.family_name,
+      selector: row => row.nom,
     },
     {
       name: 'Prénom',
@@ -60,7 +60,7 @@ const MemberList = () => {
           >
             Détail
           </Button>
-          {role && role.id === 'ADMIN' && (
+          {role === 'ADMIN' && (
             <Button
               onClick={() => handleEdit(row)}
               variant="contained"
@@ -79,7 +79,7 @@ const MemberList = () => {
     const fetchMembers = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`utils/recuperer/${selectedSex}`);
+        const response = await axiosInstance.get(`/user/member/tous`);
         if (response.data.length === 0) {
           setError('Aucun membre trouvé.');
         } else {
@@ -93,7 +93,7 @@ const MemberList = () => {
     };
 
     fetchMembers();
-  }, [selectedSex]);
+  }, []);
 
   const handleGoHome = () => {
     navigate('/home');

@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Row, Col, Alert, Card, Form } from 'react-bootstrap';
-import axiosInstance from '../services/axiosSetup';
+import { Button, Container, Row, Col, Alert, Card, Form, Spinner, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { useFamily } from '../context/FamilyContext';
+import axiosInstance from '../services/axiosSetup';
 
 const Profile = () => {
-  const { familyData } = useFamily(); // Utilisation du contexte Family
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,6 +11,9 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     email: '',
   });
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  // const [confirmAction, setConfirmAction] = useState(() => () => {});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,7 +25,7 @@ const Profile = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        setUserData(userResponse.data);
+        setUserData(userResponse.data.user);
         setFormData({
           email: userResponse.data.user?.email || '',
         });
@@ -41,7 +42,23 @@ const Profile = () => {
 
   const handleEdit = () => setEditMode(true);
 
-  const handleCancel = () => setEditMode(false);
+  const handleCancel = () => {
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmModal(false);
+    setEditMode(false);
+    setSuccessMessage('');
+    setError(null);
+    setFormData({
+      email: userData?.email || '',
+    });
+  };
+
+  const handleRejectCancel = () => {
+    setShowConfirmModal(false);
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -61,11 +78,9 @@ const Profile = () => {
       });
       setUserData(prevState => ({
         ...prevState,
-        user: {
-          ...prevState.user,
-          email: formData.email
-        }
+        email: formData.email
       }));
+      setSuccessMessage('Email mis à jour avec succès.');
       setEditMode(false);
     } catch (error) {
       console.error('Erreur lors de la mise à jour des données utilisateur:', error.response?.data || error.message);
@@ -75,7 +90,14 @@ const Profile = () => {
 
   const handleBack = () => navigate('/home');
 
-  if (loading) return <p>Chargement des données du profil...</p>;
+  if (loading) {
+    return (
+      <Container className="my-4 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p>Chargement des données du profil...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="my-4">
@@ -85,12 +107,13 @@ const Profile = () => {
             <Card.Header as="h2">Profil de l'Utilisateur</Card.Header>
             <Card.Body>
               {error && <Alert variant="danger">{error}</Alert>}
+              {successMessage && <Alert variant="success">{successMessage}</Alert>}
               {userData && (
                 <>
-                  <p><strong>Nom :</strong> {familyData.family_name || 'Non spécifié'}</p> {/* Nom non modifiable */}
-                  <p><strong>Prénom:</strong> {userData.user?.prenom}</p>
-                  <p><strong>Email:</strong> {userData.user?.email}</p>
-                  <p><strong>Rôle:</strong> {userData.role}</p>
+                  <p><strong>Nom :</strong> {userData?.nom || 'Non spécifié'}</p>
+                  <p><strong>Prénom :</strong> {userData?.prenom}</p>
+                  <p><strong>Email :</strong> {userData?.email}</p>
+                  <p><strong>Rôle :</strong> {userData.role}</p>
                   {editMode ? (
                     <Form onSubmit={handleSubmit}>
                       <Form.Group controlId="formEmail">
@@ -102,25 +125,28 @@ const Profile = () => {
                           onChange={handleChange}
                           required
                         />
+                        <Form.Control.Feedback type="invalid">
+                          {error && 'Veuillez entrer un email valide.'}
+                        </Form.Control.Feedback>
                       </Form.Group>
-                      <Button variant="primary" type="submit">
-                        Enregistrer
-                      </Button>
-                      <Button variant="secondary" onClick={handleCancel} className="ms-2">
-                        Annuler
-                      </Button>
+                      <div className="d-flex justify-content-between">
+                        <Button variant="primary" type="submit">
+                          Enregistrer
+                        </Button>
+                        <Button variant="secondary" onClick={handleCancel}>
+                          Annuler
+                        </Button>
+                      </div>
                     </Form>
                   ) : (
-                    <>
-                      {userData.role === 'ADMIN' && (
-                        <Button variant="primary" onClick={handleEdit}>
-                          Modifier Email
-                        </Button>
-                      )}
-                      <Button variant="secondary" onClick={handleBack} className="ms-2">
+                    <div className="d-flex justify-content-between">
+                      <Button variant="primary" onClick={handleEdit}>
+                        Modifier Email
+                      </Button>
+                      <Button variant="secondary" onClick={handleBack}>
                         Retour
                       </Button>
-                    </>
+                    </div>
                   )}
                 </>
               )}
@@ -128,6 +154,22 @@ const Profile = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Modal de confirmation */}
+      <Modal show={showConfirmModal} onHide={handleRejectCancel}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Êtes-vous sûr de vouloir annuler les modifications ? Vos modifications non sauvegardées seront perdues.</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleRejectCancel}>
+            Annuler
+          </Button>
+          <Button variant="primary" onClick={handleConfirmCancel}>
+            Confirmer
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

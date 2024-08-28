@@ -1,104 +1,136 @@
 import React, { useState } from 'react';
-import { Box, Button, Stepper, Step, StepLabel, Typography } from '@mui/material';
+import { Nav, Tab, Button, ProgressBar, Container } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import FamilyRegistration from './FamilyRegistration';
-import Register from './register'; // Assurez-vous que le nom du fichier est correct
+import Register from './register';
 import Login from './Login';
+import '../styles/StepperComponent.css';
 
 const steps = ['Enregistrement de la Famille', 'Inscription', 'Connexion'];
 
 const StepperComponent = () => {
-  const [activeStep, setActiveStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [isFamilyRegistered, setIsFamilyRegistered] = useState(false);
   const [isMemberRegistered, setIsMemberRegistered] = useState(false);
   const [familyName, setFamilyName] = useState(''); // État pour stocker le nom de famille
-  const [newFamille, setnewFamille] = useState(); // État pour stocker le nom de famille
+  const [newFamille, setnewFamille] = useState(); // État pour stocker l'objet famille
 
   const handleNext = () => {
-    if (activeStep === 0 && isFamilyRegistered) {
-      setActiveStep((prevStep) => prevStep + 1);
-    } else if (activeStep === 1 && isMemberRegistered) {
-      setActiveStep((prevStep) => prevStep + 1);
-    } else if (activeStep === 2) {
-      setActiveStep((prevStep) => prevStep + 1);
+    if (step === 1 && isFamilyRegistered) {
+      setStep(2);
+    } else if (step === 2 && isMemberRegistered) {
+      setStep(3);
+    } else if (step === 3) {
+      // Optionally handle completion here
     }
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
+    if (step > 1) {
+      setStep(step - 1);
+    }
   };
 
   const handleReset = () => {
-    setActiveStep(0);
+    setStep(1);
     setIsFamilyRegistered(false);
     setIsMemberRegistered(false);
     setFamilyName(''); // Réinitialiser le nom de famille
+    setnewFamille(null); // Réinitialiser l'objet famille
   };
 
+  const getProgress = () => (step / steps.length) * 100;
+
   return (
-    <Box sx={{ width: '100%', padding: '20px', backgroundColor: '#f9f9f9' }}>
-      <Stepper activeStep={activeStep} alternativeLabel>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-      <Box sx={{ padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: 3 }}>
-        {activeStep === 0 && (
-          <FamilyRegistration 
-            onRegister={(success) => {
-              if (success) {
-                setIsFamilyRegistered(true);
-                handleNext(); // Passe à l'étape suivante si l'enregistrement est réussi ou la famille existe déjà
-              } else {
-                setIsFamilyRegistered(false);
-              }
-            }} 
-            onFamilyName={(name) => setFamilyName(name)} // Conserver le nom de famille
-            setnewFamille={setnewFamille}
-          />
-        )}
-        {activeStep === 1 && (
-          <Register familyName={familyName} newFamille={newFamille} onRegister={() => setIsMemberRegistered(true)} />
-        )}
-        {activeStep === 2 && <Login onLogin={() => setIsMemberRegistered(true)} />}
-        {activeStep === steps.length && (
-          <div>
-            <Typography variant="h6">Toutes les étapes sont complètes</Typography>
-            <Button onClick={handleReset} variant="contained" color="primary" sx={{ mt: 3 }}>
-              Réinitialiser
-            </Button>
-          </div>
-        )}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-          {activeStep > 0 && (
-            <Button 
-              onClick={handleBack} 
-              sx={{ 
-                mt: 1, 
-                mr: 1,
-                color: 'text.primary', // Couleur du texte
-                backgroundColor: 'background.paper', // Couleur de fond
-                '&:hover': {
-                  backgroundColor: 'grey.300', // Couleur de fond au survol
-                  color: 'text.secondary', // Couleur du texte au survol
+    <Container fluid className="stepper-container mt-4">
+      <h2 className="text-center mb-4">Étapes d'Inscription</h2>
+      <ProgressBar
+        now={getProgress()}
+        label={`${getProgress()}%`}
+        className="mb-4"
+        variant="success"
+      />
+
+      <Tab.Container id="left-tabs-example" activeKey={step.toString()}>
+        <Nav variant="tabs" className="mb-4">
+          {steps.map((label, index) => (
+            <Nav.Item key={index} className="flex-fill">
+              <Nav.Link
+                eventKey={(index + 1).toString()}
+                className={step === index + 1 ? 'active-step' : ''}
+              >
+                {label}
+              </Nav.Link>
+            </Nav.Item>
+          ))}
+        </Nav>
+
+        <Tab.Content>
+          <Tab.Pane eventKey="1">
+          <FamilyRegistration
+              onRegister={(success, familyObject) => {
+                if (success) {
+                  setIsFamilyRegistered(true);
+                  setnewFamille(familyObject); // Stocker l'objet famille
+                  handleNext();
+                } else {
+                  setIsFamilyRegistered(false);
                 }
               }}
+              onFamilyName={(name) => setFamilyName(name)} // Conserver le nom de famille
+              setnewFamille={setnewFamille} // Passer la fonction setnewFamille comme prop
+            />
+            {!isFamilyRegistered && (
+              <p className="text-warning text-center">Veuillez compléter l'enregistrement de la famille pour continuer.</p>
+            )}
+          </Tab.Pane>
+          <Tab.Pane eventKey="2">
+            <Register 
+              familyName={familyName} 
+              newFamille={newFamille} 
+              onRegister={(success) => {
+                if (success) {
+                  setIsMemberRegistered(true);
+                  handleNext();
+                } else {
+                  setIsMemberRegistered(false);
+                }
+              }} 
+            />
+            {!isMemberRegistered && (
+              <p className="text-warning text-center">Veuillez compléter l'inscription pour continuer.</p>
+            )}
+          </Tab.Pane>
+          <Tab.Pane eventKey="3">
+            <Login />
+          </Tab.Pane>
+        </Tab.Content>
+
+        <div className="d-flex justify-content-between mt-3">
+          <Button
+            variant="secondary"
+            onClick={handleBack}
+            disabled={step === 1}
+            className="me-2"
+          >
+            <i className="bi bi-arrow-left"></i> Précédent
+          </Button>
+          {step === steps.length ? (
+            <Button variant="success" onClick={handleReset}>
+              Réinitialiser <i className="bi bi-arrow-clockwise"></i>
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={handleNext}
+              disabled={(step === 1 && !isFamilyRegistered) || (step === 2 && !isMemberRegistered)}
             >
-              Précédent
+              Suivant <i className="bi bi-arrow-right"></i>
             </Button>
           )}
-          <Button
-            variant="contained"
-            onClick={handleNext}
-            sx={{ mt: 1 }}
-            disabled={(activeStep === 0 && !isFamilyRegistered) || (activeStep === 1 && !isMemberRegistered)}
-          >
-            {activeStep === steps.length - 1 ? 'Terminer' : 'Suivant'}
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </Tab.Container>
+    </Container>
   );
 };
 

@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../services/axiosSetup';
-import { Container, Row, Col, Table, Button } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container, Row, Col, Table, Button, Alert, Spinner } from 'react-bootstrap';
 import moment from 'moment';
 import useLinkTypes from '../hooks/useLinkTypes';
+import { useAuth } from '../context/AuthContext'; // Importez votre contexte d'authentification
 
 const MemberDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate(); // Pour la navigation
     const [member, setMember] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { linkTypes, loading: linkTypesLoading, error: linkTypesError } = useLinkTypes();
+    
+    const { role } = useAuth(); // Récupérez les informations de l'utilisateur
+    const isAdmin = role === 'ADMIN'; // Déterminez si l'utilisateur est un administrateur
 
     useEffect(() => {
         const fetchMemberDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axiosInstance.get(`/membres/afficher/${id}`);
+                const endpoint = isAdmin 
+                    ? `/admin/member/details/${id}` 
+                    : `/user/member/details/${id}`;
+                const response = await axiosInstance.get(endpoint);
                 setMember(response.data.data);
             } catch (error) {
                 console.error('Erreur lors de la récupération des détails du membre', error);
@@ -28,26 +35,60 @@ const MemberDetail = () => {
         };
 
         fetchMemberDetails();
-    }, [id]);
+    }, [id, isAdmin]);
 
     if (loading) {
-        return <div>Chargement des détails du membre...</div>;
+        return (
+            <Container className="text-center mt-5">
+                <Spinner animation="border" />
+                <p>Chargement des détails du membre...</p>
+            </Container>
+        );
     }
 
     if (error) {
-        return <div>{error}</div>;
+        return (
+            <Container className="text-center mt-5">
+                <Alert variant="danger">
+                    {error}
+                </Alert>
+                <Button variant="primary" onClick={() => navigate('/members-list')}>
+                    Retour à la liste des membres
+                </Button>
+            </Container>
+        );
     }
 
     if (!member) {
-        return <div>Membre non trouvé.</div>;
+        return (
+            <Container className="text-center mt-5">
+                <Alert variant="warning">
+                    Membre non trouvé.
+                </Alert>
+                <Button variant="primary" onClick={() => navigate('/members-list')}>
+                    Retour à la liste des membres
+                </Button>
+            </Container>
+        );
     }
 
     if (linkTypesLoading) {
-        return <div>Chargement des types de lien...</div>;
+        return (
+            <Container className="text-center mt-5">
+                <Spinner animation="border" />
+                <p>Chargement des types de lien...</p>
+            </Container>
+        );
     }
 
     if (linkTypesError) {
-        return <div>{linkTypesError}</div>;
+        return (
+            <Container className="text-center mt-5">
+                <Alert variant="danger">
+                    {linkTypesError}
+                </Alert>
+            </Container>
+        );
     }
 
     const getLinkTypeDescription = (type) => {
@@ -60,7 +101,7 @@ const MemberDetail = () => {
             <Row>
                 <Col>
                     <h2>Détails du membre</h2>
-                    <Table striped bordered hover>
+                    <Table striped bordered hover responsive>
                         <tbody>
                             <tr>
                                 <th>Nom</th>
@@ -108,7 +149,7 @@ const MemberDetail = () => {
                             </tr>
                         </tbody>
                     </Table>
-                    <Button variant="primary" onClick={() => window.history.back()}>Retour</Button>
+                    <Button variant="primary" onClick={() => navigate(-1)}>Retour</Button>
                 </Col>
             </Row>
         </Container>
